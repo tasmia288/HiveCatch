@@ -1,56 +1,83 @@
-## Devvit React Starter
+# HiveCatch
 
-A starter to build web applications on Reddit's developer platform
+HiveCatch is a Reddit Devvit moderation dashboard for tracking coordinated abuse, surfacing report activity, and taking cluster-based moderator actions.
 
-- [Devvit](https://developers.reddit.com/): A way to build and deploy immersive games on Reddit
-- [Vite](https://vite.dev/): For compiling the webView
-- [React](https://react.dev/): For UI
-- [Hono](https://hono.dev/): For backend logic
-- [Tailwind](https://tailwindcss.com/): For styles
-- [TypeScript](https://www.typescriptlang.org/): For type safety
+It is built for real subreddit use, not simulation. The app records report-like signals, builds a live cluster graph, and lets moderators review, ban, delete, and clean up clusters directly from the dashboard.
 
-## Getting Started
+## What It Does
 
-> Make sure you have Node 22 downloaded on your machine before running!
+- Tracks report-like events from native Reddit reports and report phrases such as `!report`, `!scam`, `!spam`, and `!harass`.
+- Builds a cluster view from shared thread activity and mention patterns.
+- Shows a live incident feed with direct links back to the source post.
+- Supports selective banning, full-cluster banning, and cluster cleanup from the dashboard.
+- Persists activity in Redis for live refreshes and incident auditing.
 
-1. Run `npm create devvit@latest --template=react`
-2. Go through the installation wizard. You will need to create a Reddit account and connect it to Reddit developers
-3. Copy the command on the success page into your terminal
+## Requirements
 
-## Commands
+- Node.js 22+
+- A Devvit app installed on a subreddit
+- Moderator permissions for the target subreddit
 
-- `npm run dev`: Starts a development server where you can develop your application live on Reddit.
-- `npm run build`: Builds your client and server projects
-- `npm run deploy`: Uploads a new version of your app
-- `npm run launch`: Publishes your app for review
-- `npm run login`: Logs your CLI into Reddit
-- `npm run type-check`: Type checks, lints, and prettifies your app
+## Setup
 
-## HiveCatch: Production Readiness
+1. Install dependencies.
 
-Follow these steps to run HiveCatch on a real subreddit and validate real activity.
+```bash
+npm install
+```
 
-1. Build and install the app (Devvit CLI required):
+2. Build the app.
 
 ```bash
 npm run build
-devvit install hive_catch_testing
 ```
 
-2. Create one or more posts by suspected abuse accounts in the subreddit.
+3. Run a Devvit playtest or install the app into a subreddit using the Devvit CLI.
 
-3. Use two supporter accounts to comment on the thread and mention the suspected account(s).
-4. Have a reporter use the native report menu (three-dot → Report) or post a comment with `!report u/target`.
+## Devvit Workflow
 
-5. Open the monitor and click `Refresh` to pull live data. Check `/api/debug/parsed-mod-actions` to verify native reports were captured.
+- `devvit playtest hive_catch_testing` for local preview in a subreddit-like environment.
+- `devvit install hive_catch_testing` to install the app in a subreddit for live testing.
+- `npm run build` before each deploy or playtest change.
 
-6. Verify `Ban Entire Hive` only when you are ready — it performs moderator actions (ban, lock, modmail) and will be visible in server logs.
+## Dashboard Guide
 
-## Real-sub runbook
+- `Refresh` pulls the latest Redis-backed snapshot.
+- `Review Ban` previews the cluster candidates before any moderator action runs.
+- `Remove cluster` removes a cluster from the dashboard and incident feed.
+- Clicking an incident opens the source post in a new tab.
+- The incident feed and cluster list are based on current live data, so the view updates as reports are recorded.
 
-- Use real posts and real user interactions. Do not rely on synthetic simulation data; the app now removes demo-only data paths.
-- To build a believable cluster, have accounts interact on multiple posts in the same thread group, mention each other, and then report from a third account.
-- A single reporter can trigger the incident feed; multiple supporters strengthen the cluster graph.
-- Use `Refresh` after the thread has activity so the dashboard picks up the latest counts.
+## Data Handling
 
-If you want automated tests added (Vitest/Jest), tell me which runner you prefer and I will scaffold tests for `modActionParser` and the `core/hive` helpers.
+HiveCatch stores moderation telemetry in Redis so the dashboard can refresh live without external services.
+
+Data includes:
+
+- usernames involved in incidents
+- report counts and cluster links
+- incident metadata such as post IDs, reporters, and reasons
+- raw mod-action payloads for debugging
+
+Privacy details are documented in [Privacy Policy](privacy.md).
+Terms of use are documented in [Terms of Service](terms.md).
+
+## Commands
+
+- `npm run dev`: Builds the client in watch mode for development.
+- `npm run build`: Builds the client and server bundles.
+- `npm run deploy`: Uploads a new version of the app.
+- `npm run launch`: Publishes the app for review.
+- `npm run login`: Logs the CLI into Reddit.
+- `npm run type-check`: Runs type checking and formatting checks.
+
+## Troubleshooting
+
+- If `Review Ban` shows zero accounts, the current snapshot likely has no eligible ban candidates in the selected cluster.
+- If incidents open in the same tab, make sure the app has been rebuilt and the new client bundle is loaded.
+- If `git add` or `git commit` behaves oddly from `e:/reddit2`, check whether you are inside the nested `e:/reddit2/hivecatch` repository instead of the parent workspace repository.
+
+## Project Files
+
+- [Privacy Policy](privacy.md)
+- [Terms of Service](terms.md)
