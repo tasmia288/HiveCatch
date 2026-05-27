@@ -1,0 +1,4 @@
+name: hivecatch
+manifest: devvit.json
+# Minimal devvit project config for local playtest
+# Adjust 'subreddit' in devvit.json dev block when running playtest if needed
